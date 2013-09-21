@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# timezone: this should be set to a timezone with the same offset
+# as GMT/UTC
+# GMT should work for everyone - if not, try UTC
+
+TZ=GMT
+
+
+export TZ
+
+
+# change the path below if installed in a non-default location
+
+exec /usr/local/bin/radioclkd2 $*
+

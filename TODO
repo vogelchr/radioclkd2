@@ -1,0 +1,22 @@
+Things to do
+
+- add something useful to, or configure autoconf/automake to ignore,
+ NEWS, ChangeLog, AUTHORS
+
+- WWVB broken - needs fixing
+
+- Improbed status reporting. Perhaps an hourly summary of each clock
+suggested counters:
+ correct decodes: full 60 seconds
+ correct decodes: but under 60 seconds of data
+ bad pulse lengths: short pulses (noise during low periods?)
+ bad pulse lengths: long pulses (missing pulses)
+ failed time decodes: short data (usually due to bad pulse lengths)
+ failed time decodes: invalid data
+
+- Finish documentation. Include a section on calibrating the offset of the clock.
+
+- Check to make sure receiver is powered on correctly. add options to configure
+which serial lines are high/low to power a clock.
+
+- 

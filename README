@@ -1,0 +1,103 @@
+radioclkd2 - an interface between simple radio clock recievers and ntpd
+-----------------------------------------------------------------------
+
+This program will decode the time from simple MSF, DCF77 and WWVB recievers
+and pass the time to ntpd via the SHM driver (28). These clocks just pass
+the raw second pulses to the DCD, CTS, DSR or RNG serial line.
+
+
+Hardware:
+
+You need a MSF (UK), DCF77 (Germany/Europe) or WWVB (North America) receiver
+which directly drives a serial line. The Swiss HGB uses a format (almost)
+identical to DCF77 so should also work.
+
+Want to build your own reciever? See Jonathan Buzzard's page
+  http://www.buzzard.org.uk/jonathan/radioclock.html
+
+TimeTools claim their clock outputs raw MSF, but I have not tested this.
+  http://www.timetools.co.uk/
+
+
+Installation:
+
+To install:
+  tar zxvf radioclkd2-X.YY.tar.gz
+  cd radioclkd2-X.YY
+  ./configure
+  make
+  make install
+
+By default, radioclkd2 is installed to /usr/local/sbin/
+
+
+Usage:
+
+You need ntpd. Download source from http://www.ntp.org/
+
+You need to enable SHM support in ntpd. This isn't enabled by default.
+  ./configure --enable-SHM
+now install ntpd
+  make
+  make install
+
+
+To use this as a drop-in replacement for Jonathan Buzzard's radioclkd
+use
+ for 1 clock:  radioclkd2 ttyXX 
+ for 2 clocks: radioclkd2 ttyXX ttyXX:cts
+
+For more details, run radioclkd2 without parameters.
+
+
+
+Bugs and Limitations:
+
+radioclkd2 can operate in one of three modes:
+* poll
+ - should work on any Posix system
+ - supports all 4 serial lines
+ - least accurate - perhaps +-2ms at best
+* iwait
+ - Linux only - uses the TIOCMIWAIT ioctl
+ - only supports DCD, CTS and DSR - RNG only triggers an interrupt one way
+ - good accuracy - under +-1ms is possible, perhaps as good as +-0.2ms
+* timepps
+ - FreeBSD (and Linux with ppskit? - not tested)
+ - only supports DCD - only 1 clock per serial port
+ - good accuracy - at least as good as iwait
+
+There is code to handle WWVB (US) but this has not been tested yet.
+(Initial tests show that WWVB does not currently work)
+
+
+History:
+
+0.01
+ Serial interface code done
+ Decode of MSF complete
+
+0.02
+ Decode of DCF77 complete
+ SHM code written
+ timepps code written to support FreeBSD
+ Added code to average the time offset from the last 60 seconds
+
+0.03
+ Decode of WWVB written but not tested
+ Command line processing written
+ Fixed DCF77 day-of-week check (it goes from 1 to 7, not 0 to 6)
+ Changed the average code to filter out bad samples
+
+0.04
+ README written
+ Removed hard-coded clock offsets - now a run-time option
+ FIRST PUBLIC RELEASE
+
+0.05
+ Added missing #include <time.h> to decode_*.c
+ Changed time offset limit on median filter to 100ms
+ Added leap-second reporting for DCF77 and WWVB - not available in MSF
+
+0.06
+ Changed to use autoconf
