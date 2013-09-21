@@ -27,5 +27,6 @@
 # define ENABLE_SCHED
 #endif
 
+#define ENABLE_GPIO
 
 #endif

@@ -27,6 +27,7 @@ struct serDevS
 #define	SERPORT_MODE_IWAIT	(1)
 #define	SERPORT_MODE_POLL	(2)
 #define	SERPORT_MODE_TIMEPPS	(3)
+#define SERPORT_MODE_GPIO       (4)
 	int		mode;
 
 	//which modem status lines to check - some of TIOCM_{RNG|DSR|CD|CTS}

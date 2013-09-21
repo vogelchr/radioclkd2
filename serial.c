@@ -34,6 +34,10 @@
 #include <setjmp.h>
 #include <sys/errno.h>
 
+#ifdef ENABLE_GPIO
+#include <poll.h>
+#endif
+
 #ifdef ENABLE_TIMEPPS
 #include <sys/timepps.h>
 #endif
@@ -254,6 +258,9 @@ serWaitForSerialChange ( serDevT* dev )
 	pps_info_t	ppsinfo;
 	int		ppslines;
 #endif
+#ifdef ENABLE_GPIO
+	struct pollfd  pollfds[1];
+#endif
 
 	if ( dev->modemlines == 0 )
 		return -1;
@@ -278,6 +285,25 @@ serWaitForSerialChange ( serDevT* dev )
 		//timeout
 		return -1;
 		break;
+
+#ifdef ENABLE_GPIO
+	case SERPORT_MODE_GPIO:
+		pollfds[0].fd = dev->fd;
+		pollfds[0].events = POLLERR;
+
+		i = poll(pollfds, 1, 10000); /* timeout 10 seconds */
+		if (i != 1 && !(pollfds[0].revents & POLLERR) )
+			return -1;
+
+		gettimeofday ( &tv, NULL );
+		timeval2time_f ( &tv, timef );
+
+		if ( serGetDevStatusLines ( dev, timef ) < 0 )
+			return -1;
+
+		return 0;
+		break;
+#endif
 
 
 #ifdef ENABLE_TIOCMIWAIT
@@ -354,6 +380,23 @@ int
 serGetDevStatusLines ( serDevT* dev, time_f timef )
 {
 	int	lines;
+
+#ifdef ENABLE_GPIO
+	char    buf[8];
+	if (dev->mode == SERPORT_MODE_GPIO) {
+		if (lseek(dev->fd, SEEK_SET, 0) == -1)
+			return -1;
+		if (read(dev->fd, buf, sizeof(buf)) <= 0)
+			return -1;
+
+		if (buf[0] == '1')
+			lines = TIOCM_CD;
+		else
+			lines = 0;
+
+		return serStoreDevStatusLines ( dev, lines, timef );
+	}
+#endif
 
 	if ( ioctl ( dev->fd, TIOCMGET, &lines ) != 0 )
 		return -1;
