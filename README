@@ -1,3 +1,9 @@
+** This is a fork of radioclkd2 from http://www.jonatkins.com/page/software/radioclkd2
+** originally written by Jon Atkins.
+
+** Forked by Christian Vogel <vogelchr@vogel.cx> to add support for Linux
+** GPIO pins in interrupt mode.
+
 radioclkd2 - an interface between simple radio clock recievers and ntpd
 -----------------------------------------------------------------------
 
@@ -50,7 +56,6 @@ use
 For more details, run radioclkd2 without parameters.
 
 
-
 Bugs and Limitations:
 
 radioclkd2 can operate in one of three modes:
@@ -66,10 +71,11 @@ radioclkd2 can operate in one of three modes:
  - FreeBSD (and Linux with ppskit? - not tested)
  - only supports DCD - only 1 clock per serial port
  - good accuracy - at least as good as iwait
+* gpio
+ - Supports GPIO pins on Linux (e.g. on the Raspberry Pi)
 
 There is code to handle WWVB (US) but this has not been tested yet.
 (Initial tests show that WWVB does not currently work)
-
 
 History:
 
