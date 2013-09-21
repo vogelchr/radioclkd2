@@ -130,11 +130,17 @@ usage (void)
 "   -s poll: poll the serial port 1000 times/sec (poor)\n"
 "   -s iwait: wait for serial port interrupts (ok)\n"
 "   -s timepps: use the timepps interface (good)\n"
+"   -s gpio: use /sys/class/gpio/gpioX/value for tty\n"
+"         setup \"edges\" to \"both\", uses poll() for GPIO pin interrupts\n"
+"         GPIO pulses are simulating DCD, so use :DCD and :-DCD for polarity\n"
 #ifndef ENABLE_TIMEPPS
 "  (timepps not available)\n"
 #endif
 #ifndef ENABLE_TIOCMIWAIT
 "  (iwait not available)\n"
+#endif
+#ifndef ENABLE_GPIO
+"  (gpio not available)\n"
 #endif
 "   -d: debug mode. runs in the foreground and print pulses\n"
 "   -v: verbose mode.\n"
@@ -211,6 +217,10 @@ main ( int argc, char** argv )
 #ifdef ENABLE_TIOCMIWAIT
 				else if ( strcasecmp ( parm, "iwait" ) == 0 )
 					serialmode = SERPORT_MODE_IWAIT;
+#endif
+#ifdef ENABLE_GPIO
+				else if ( strcasecmp ( parm, "gpio" ) == 0 )
+					serialmode = SERPORT_MODE_GPIO;
 #endif
 				else
 					usage();
