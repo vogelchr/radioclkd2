@@ -112,7 +112,7 @@ clkPulseLength ( time_f timef, int clocktype )
 
 	for ( i=0; lengths[i] > 0; i++ )
 	{
-		if ( timef > (lengths[i]-0.040) && timef < (lengths[i]+0.050) )
+		if ( timef > (lengths[i]-0.040) && timef < (lengths[i]+0.040) )
 			return (int)(lengths[i] * 10 + 0.5);	//to convert to 10ths of a second
 	}
 	return -1;
