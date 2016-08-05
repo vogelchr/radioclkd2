@@ -74,9 +74,6 @@ radioclkd2 can operate in one of three modes:
 * gpio
  - Supports GPIO pins on Linux (e.g. on the Raspberry Pi)
 
-There is code to handle WWVB (US) but this has not been tested yet.
-(Initial tests show that WWVB does not currently work)
-
 History:
 
 0.01
@@ -107,3 +104,7 @@ History:
 
 0.06
  Changed to use autoconf
+
+0.07
+ Fixed WWVB support. Existing MSF users will need to alter their startup
+ scripts to include "-t msf".

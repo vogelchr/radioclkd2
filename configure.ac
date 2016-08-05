@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(radioclkd2,0.06)
+AC_INIT(radioclkd2,0.07)
 AM_INIT_AUTOMAKE(foreign)
 
 AM_MAINTAINER_MODE

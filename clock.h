@@ -8,6 +8,10 @@
 
 #define	PPS_AVERAGE_COUNT		(60)
 
+#define CLOCKTYPE_DCF77	0
+#define CLOCKTYPE_MSF	1
+#define CLOCKTYPE_WWVB	2
+
 
 typedef struct clkInfoS clkInfoT;
 struct clkInfoS
@@ -30,7 +34,7 @@ struct clkInfoS
 	time_f		pctime;
 	time_f		radiotime;
 	int		radioleap;
-
+	int		clocktype;	// The clock type. See CLOCKTYPE_
 
 	int	secondssincetime;
 
@@ -47,11 +51,11 @@ struct clkInfoS
 
 void clkDumpData ( const clkInfoT* clock );
 
-clkInfoT* clkCreate ( int inverted, int shmunit, time_f fudgeoffset );
+clkInfoT* clkCreate ( int inverted, int shmunit, time_f fudgeoffset, int clocktype );
 
 void clkDataClear ( clkInfoT* clock );
 
-int clkPulseLength ( time_f timef );
+int clkPulseLength ( time_f timef, int clocktype );
 
 
 void clkProcessStatusChange ( clkInfoT* clock, int Status, time_f timef );
