@@ -98,13 +98,13 @@ clkPulseLength ( time_f timef, int clocktype )
         switch (clocktype) {
         case CLOCKTYPE_DCF77:
             //  (note: these last 2 are to handle the missing second 59)
-            lengths = (time_f[]){ 0.1, 0.2, 0.8, 0.9, 1.8, 1.9 };
+            lengths = (time_f[]){ 0.1, 0.2, 0.8, 0.9, 1.8, 1.9, -1.0 };
             break;
         case CLOCKTYPE_MSF:
-            lengths = (time_f[]){ 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9 };
+            lengths = (time_f[]){ 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, -1.0 };
             break;
         case CLOCKTYPE_WWVB:
-            lengths = (time_f[]){ 0.2, 0.5, 0.8 };
+            lengths = (time_f[]){ 0.2, 0.5, 0.8, -1.0 };
             break;
         }
 
