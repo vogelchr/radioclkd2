@@ -14,7 +14,7 @@
 
 #if HAVE_SYS_TIMEPPS_H
 // if <sys/timepps.h> is available, enable pps code
-# define ENABLE_TIMEPPS
+#define ENABLE_TIMEPPS
 #endif
 
 
@@ -27,6 +27,8 @@
 # define ENABLE_SCHED
 #endif
 
+#ifdef __arm__
 #define ENABLE_GPIO
+#endif
 
 #endif

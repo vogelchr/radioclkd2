@@ -20,8 +20,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-//NOTE: this code HAS *NOT* been tested at all
-
 #include "config.h"
 
 
@@ -40,9 +38,6 @@
 
 
 #define	CENTURY		(2000)	//added to 2 digit years
-
-//#define	WWVB_OFFSET_SEC	((time_f)0.019)	//approx delay for WWVB reciever to trigger a pulse at the start of a second
-//this can be further fine-tuned with fudge time1 in ntp.conf, if required
 
 //all these macros assume the following:
 //1. clock is a variable for the current clock
@@ -103,10 +98,10 @@ wwvbDecode ( clkInfoT* clock, time_f minstart )
 	memset ( &dectime, 0, sizeof(dectime) );
 
 	dectime.tm_year = wwvbGetBCD ( clock, 44, 10 ) + CENTURY - 1900;
-	dectime.tm_mon = 1;
+	dectime.tm_mon = 0;
 	dectime.tm_mday = wwvbGetBCD ( clock, 22, 12 );
 	dectime.tm_hour = wwvbGetBCD ( clock, 12, 7 );
-	dectime.tm_min = wwvbGetBCD ( clock, 1, 8 );
+	dectime.tm_min = wwvbGetBCD ( clock, 1, 8 ) + 1;
 	dectime.tm_sec = 0;
 	dectime.tm_isdst = 0;	//time is always UTC... (although there are bits for summer time)
 
@@ -119,11 +114,21 @@ wwvbDecode ( clkInfoT* clock, time_f minstart )
 	if ( dectime.tm_min > 60 )
 		return -1;
 
+        /*
+                WWVB Sends the on-time marker, which is back-to-back 0.8s pulses
+                and THEN the time at that marker. So, we need to always move the
+                time forward one minute to be correct.
+        */
+	if ( dectime.tm_min == 60 ) {
+		dectime.tm_min = 0;
+		dectime.tm_hour++;
+		if ( dectime.tm_hour > 23 ) {
+			dectime.tm_hour = 0;
+		}
+	}
+
 	loggerf ( LOGGER_DEBUG, "WWVB time: %04d-%03d %02d:%02d %s%s\n", dectime.tm_year+1900, dectime.tm_mday, dectime.tm_hour, dectime.tm_min, GET(55)?" leap year":"", GET(56)?" leap second soon":"" );
 
-//	setenv ( "TZ", "", 1 );
-//
-//	dectimet = mktime ( &dectime );
 	dectimet = UTCtime ( &dectime );
 	if ( dectimet == (time_t)(-1) )
 		return -1;

@@ -126,7 +126,7 @@ void
 usage (void)
 {
 	printf (
-"Usage: radioclkd [ -s poll|iwait|timepps ] [ -d ] [ -v ] tty[:[-]line[:fudgeoffs]] ...\n"
+"Usage: radioclkd2 [ -s poll|iwait|timepps ] [ -t dcf77|msf|wwvb ] [ -d ] [ -v ] tty[:[-]line[:fudgeoffs]] ...\n"
 "   -s poll: poll the serial port 1000 times/sec (poor)\n"
 "   -s iwait: wait for serial port interrupts (ok)\n"
 "   -s timepps: use the timepps interface (good)\n"
@@ -142,6 +142,9 @@ usage (void)
 #ifndef ENABLE_GPIO
 "  (gpio not available)\n"
 #endif
+"   -t dcf77: 77.5KHz Germany/Europe DCF77 Radio Station (default)\n"
+"   -t msf: UK 60KHz MSF Radio Station\n"
+"   -t wwvb: US 60KHz WWVB Fort Collins Radio Station\n"
 "   -d: debug mode. runs in the foreground and print pulses\n"
 "   -v: verbose mode.\n"
 "   tty: serial port for clock\n"
@@ -158,6 +161,7 @@ main ( int argc, char** argv )
 {
 	int	serialmode;
 	int	shmunit;
+	int	clocktype = CLOCKTYPE_DCF77;
 	char*	arg;
 	char*	parm;
 	serDevT*	devfirst;
@@ -226,7 +230,29 @@ main ( int argc, char** argv )
 					usage();
 				break;
 
-			case 'd':
+                        case 't':
+                                if ( strlen(arg) > 2 )
+                                {
+                                        parm = arg + 2;
+                                }
+                                else
+                                {
+                                        argc--;
+                                        argv++;
+                                        parm = argv[0];
+                                }
+
+                                if ( strcasecmp ( parm, "dcf77" ) == 0 )
+                                        clocktype = CLOCKTYPE_DCF77;
+                                else if ( strcasecmp ( parm, "msf" ) == 0 )
+                                        clocktype = CLOCKTYPE_MSF;
+                                else if ( strcasecmp ( parm, "wwvb" ) == 0 )
+                                        clocktype = CLOCKTYPE_WWVB;
+                                else
+                                        usage();
+                                break;
+
+                        case 'd':
 				debugLevel ++;
 				break;
 
@@ -304,7 +330,7 @@ main ( int argc, char** argv )
 			if ( serline == NULL )
 				loggerf ( LOGGER_NOTE, "Error: failed to attach to serial line '%s'\n", arg );
 
-			clock = clkCreate ( negate, shmunit, fudgeoffset );
+			clock = clkCreate ( negate, shmunit, fudgeoffset, clocktype );
 			if ( clock == NULL )
 				loggerf ( LOGGER_NOTE, "Error: failed to create clock for serial line '%s'\n", arg );
 

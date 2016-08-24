@@ -3,9 +3,7 @@ Things to do
 - add something useful to, or configure autoconf/automake to ignore,
  NEWS, ChangeLog, AUTHORS
 
-- WWVB broken - needs fixing
-
-- Improbed status reporting. Perhaps an hourly summary of each clock
+- Improved status reporting. Perhaps an hourly summary of each clock
 suggested counters:
  correct decodes: full 60 seconds
  correct decodes: but under 60 seconds of data

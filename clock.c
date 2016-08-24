@@ -59,7 +59,7 @@ clkDumpData ( const clkInfoT* clock )
 
 
 clkInfoT*
-clkCreate ( int inverted, int shmunit, time_f fudgeoffset )
+clkCreate ( int inverted, int shmunit, time_f fudgeoffset, int clocktype )
 {
 	clkInfoT*	clkinfo;
 
@@ -71,6 +71,7 @@ clkCreate ( int inverted, int shmunit, time_f fudgeoffset )
 	clkinfo->fudgeoffset = fudgeoffset;
 
 	clkinfo->numdata = 0;
+	clkinfo->clocktype=clocktype;
 
 	if ( !debugLevel )
 		clkinfo->shm = shmCreate ( shmunit );
@@ -85,23 +86,33 @@ clkDataClear ( clkInfoT* clock )
 }
 
 int
-clkPulseLength ( time_f timef )
+clkPulseLength ( time_f timef, int clocktype )
 {
+        //only detect short pulses...
+        if ( timef > 2.0 )
+                return -1;
+
 	//pulse/clear lengths for each radio clock
-	//MSF: 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9
-	//DCF77: 0.1, 0.2, 0.8, 0.9, 1.8, 1.9 (note: these last 2 are to handle the missing second 59)
-	//WWVB: 0.2, 0.5, 0.8
-	static const time_f lengths[] = { 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 1.8, 1.9, -1 };
+	time_f* lengths;
+
+        switch (clocktype) {
+        case CLOCKTYPE_DCF77:
+            //  (note: these last 2 are to handle the missing second 59)
+            lengths = (time_f[]){ 0.1, 0.2, 0.8, 0.9, 1.8, 1.9, -1.0 };
+            break;
+        case CLOCKTYPE_MSF:
+            lengths = (time_f[]){ 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, -1.0 };
+            break;
+        case CLOCKTYPE_WWVB:
+            lengths = (time_f[]){ 0.2, 0.5, 0.8, -1.0 };
+            break;
+        }
 
 	int	i;
 
-	//only detect short pulses...
-	if ( timef > 2.0 )
-		return -1;
-
 	for ( i=0; lengths[i] > 0; i++ )
 	{
-		if ( timef > (lengths[i]-0.04) && timef < (lengths[i]+0.040) )
+		if ( timef > (lengths[i]-0.040) && timef < (lengths[i]+0.040) )
 			return (int)(lengths[i] * 10 + 0.5);	//to convert to 10ths of a second
 	}
 	return -1;
@@ -123,7 +134,7 @@ clkProcessStatusChange ( clkInfoT* clock, int status, time_f timef )
 
 	if ( !clock->status && status )
 	{
-		val = clkPulseLength ( diff );
+		val = clkPulseLength ( diff, clock->clocktype );
 
 
 		if ( val < 0 )
@@ -146,7 +157,7 @@ clkProcessStatusChange ( clkInfoT* clock, int status, time_f timef )
 			}
 			else
 			{
-				if ( val == 5 )	//MSF minute marker...
+				if ( val == 5 && clock->clocktype==CLOCKTYPE_MSF )  //MSF minute marker...
 				{
 					clkDumpData ( clock );
 					if ( msfDecode ( clock, clock->changetime ) < 0 )
@@ -157,8 +168,17 @@ clkProcessStatusChange ( clkInfoT* clock, int status, time_f timef )
 
 					clkDataClear ( clock );
 				}
-				else if ( val == 8 )	//WWVB minute marker...
+				if ( val == 8 && 
+                                     clock->clocktype == CLOCKTYPE_WWVB &&
+                                     clock->numdata > 0 && 
+                                     clock->data[ clock->numdata - 1 ] == 8 )	
 				{
+                                    /*
+                                        WWVB's Minute marker is a pair of back-to-back 0.8 second pulses, where
+                                        the first one is the start of the new minute, and the previous one was the
+                                        end of the previous minute. Strangely, they send the On-Time-Marker, and
+                                        then the time.
+                                    */
 					clkDumpData ( clock );
 					if ( wwvbDecode ( clock, clock->changetime ) < 0 )
 						loggerf ( LOGGER_DEBUG, "warning: failed to decode WWVB time\n" );
@@ -168,11 +188,11 @@ clkProcessStatusChange ( clkInfoT* clock, int status, time_f timef )
 					clkDataClear ( clock );
 				}
 
-				clock->data[clock->numdata++] = val;
+				clock->data[ clock->numdata++ ] = val;
 			}
 
 			if ( clock->numdata > 0 )
-				loggerf ( LOGGER_TRACE, "pulse end: length "TIMEF_FORMAT" - %3d: %d\n", diff, clock->numdata-1, clock->data[clock->numdata-1] );
+				loggerf ( LOGGER_TRACE, "pulse end: length "TIMEF_FORMAT" - # Bits: %3d: Pulse Width (10ths): %d\n", diff, clock->numdata-1, clock->data[clock->numdata-1] );
 
 		}
 
@@ -184,7 +204,7 @@ clkProcessStatusChange ( clkInfoT* clock, int status, time_f timef )
 		loggerf ( LOGGER_TRACE, "pulse start: at "TIMEF_FORMAT"\n", timef );
 
 
-		val = clkPulseLength ( diff );
+		val = clkPulseLength ( diff, clock->clocktype );
 
 		if ( val < 0 )
 		{
