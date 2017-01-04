@@ -155,8 +155,12 @@ dcf77Decode ( clkInfoT* clock, time_f minstart )
 		return -1;
 	if ( dectime.tm_min > 60 )
 		return -1;
-
-	loggerf ( LOGGER_DEBUG, "DCF77 time: %04d-%02d-%02d (day %d) %02d:%02d %s%s%s%s\n", dectime.tm_year+1900, dectime.tm_mon, dectime.tm_mday, dectime.tm_wday, dectime.tm_hour, dectime.tm_min, GET(17) ? "CEST" : "CET", GET(16) ? " timezone change soon":"", GET(19) ? " leap second soon":"", GET(15) ? " res ant" : " main ant" );
+	/*                                   year mon  mday     wday hour min  TZ-info-leap-ant */
+	loggerf ( LOGGER_DEBUG, "DCF77 time: %04d-%02d-%02d (day %d) %02d:%02d %s%s%s%s\n",
+		dectime.tm_year+1900, dectime.tm_mon+1, dectime.tm_mday,
+		dectime.tm_wday, dectime.tm_hour, dectime.tm_min,
+		GET(17) ? "CEST" : "CET", GET(16) ? " timezone change soon":"",
+		GET(19) ? " leap second soon":"", GET(15) ? " res ant" : " main ant" );
 
 
 //	setenv("TZ", "", 1);
