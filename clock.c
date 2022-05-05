@@ -40,6 +40,13 @@
 #include "logger.h"
 #include "settings.h"
 
+/*
+ * Clock Pulse Lengths
+ */
+static time_f lengths_clocktype_dcf77[7] = { 0.1, 0.2, 0.8, 0.9, 1.8, 1.9, -1.0 };
+static time_f lengths_clocktype_msf[8]   = { 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, -1.0 };
+static time_f lengths_clocktype_wwvb[4]  = { 0.2, 0.5, 0.8, -1.0 };
+
 
 static clkInfoT* clkListHead;
 
@@ -93,18 +100,18 @@ clkPulseLength ( time_f timef, int clocktype )
                 return -1;
 
 	//pulse/clear lengths for each radio clock
-	time_f* lengths;
+	time_f* lengths = NULL;
 
         switch (clocktype) {
         case CLOCKTYPE_DCF77:
             //  (note: these last 2 are to handle the missing second 59)
-            lengths = (time_f[]){ 0.1, 0.2, 0.8, 0.9, 1.8, 1.9, -1.0 };
+            lengths = lengths_clocktype_dcf77;
             break;
         case CLOCKTYPE_MSF:
-            lengths = (time_f[]){ 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, -1.0 };
+            lengths = lengths_clocktype_msf;
             break;
         case CLOCKTYPE_WWVB:
-            lengths = (time_f[]){ 0.2, 0.5, 0.8, -1.0 };
+            lengths = lengths_clocktype_wwvb;
             break;
         }
 
