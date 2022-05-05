@@ -126,7 +126,7 @@ void
 usage (void)
 {
 	printf (
-"Usage: radioclkd2 [ -s poll|iwait|timepps ] [ -t dcf77|msf|wwvb ] [ -d ] [ -v ] tty[:[-]line[:fudgeoffs]] ...\n"
+"Usage: radioclkd2 [ -s poll|iwait|timepps ] [ -t dcf77|msf|wwvb ] [ -n <shm start unit> ] [ -d ] [ -v ] tty[:[-]line[:fudgeoffs]] ...\n"
 "   -s poll: poll the serial port 1000 times/sec (poor)\n"
 "   -s iwait: wait for serial port interrupts (ok)\n"
 "   -s timepps: use the timepps interface (good)\n"
@@ -145,6 +145,7 @@ usage (void)
 "   -t dcf77: 77.5KHz Germany/Europe DCF77 Radio Station (default)\n"
 "   -t msf: UK 60KHz MSF Radio Station\n"
 "   -t wwvb: US 60KHz WWVB Fort Collins Radio Station\n"
+"   -n shm#: NTP shared memory start unit - default is 0\n"
 "   -d: debug mode. runs in the foreground and print pulses\n"
 "   -v: verbose mode.\n"
 "   tty: serial port for clock\n"
@@ -241,7 +242,6 @@ main ( int argc, char** argv )
                                         argv++;
                                         parm = argv[0];
                                 }
-
                                 if ( strcasecmp ( parm, "dcf77" ) == 0 )
                                         clocktype = CLOCKTYPE_DCF77;
                                 else if ( strcasecmp ( parm, "msf" ) == 0 )
@@ -259,6 +259,28 @@ main ( int argc, char** argv )
 			case 'v':
 				verboseLevel ++;
 				break;
+
+			case 'n':
+			        if ( strlen(arg) > 2 )
+                                {
+                                        parm = arg + 2;
+                                }
+                                else
+                                {
+                                        argc--;
+                                        argv++;
+                                        parm = argv[0];
+                                }
+
+                                if ( strcasecmp ( parm, "0" ) == 0 )
+                                        shmunit = 0;
+                                else if ( strcasecmp ( parm, "1" ) == 0 )
+                                        shmunit = 1;
+                                else if ( strcasecmp ( parm, "2" ) == 0 )
+                                        shmunit = 2;
+                                else
+                                        usage();
+                                break;
 
 			default:
 				usage();
